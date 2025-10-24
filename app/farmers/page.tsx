@@ -1,0 +1,410 @@
+"use client"
+
+import type React from "react"
+
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { QrCode, Upload, CheckCircle2, Clock, Package, Wallet, ChevronRight, Info } from "lucide-react"
+
+export default function FarmerDashboard() {
+  const [walletConnected, setWalletConnected] = useState(false)
+  const [currentStep, setCurrentStep] = useState(0)
+  const [formData, setFormData] = useState({
+    name: "",
+    location: "",
+    farmSize: "",
+    farmType: "",
+    certifications: "",
+    cropName: "",
+    harvestDate: "",
+    description: "",
+  })
+  const [showQR, setShowQR] = useState(false)
+  const [generatedQR, setGeneratedQR] = useState("")
+
+  const steps = [
+    { title: "Personal Info", description: "Your details" },
+    { title: "Farm Info", description: "Farm details" },
+    { title: "Certifications", description: "Upload documents" },
+    { title: "Add Crop", description: "Register batch" },
+  ]
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleNextStep = () => {
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1)
+    }
+  }
+
+  const handleGenerateQR = () => {
+    if (formData.cropName && formData.harvestDate) {
+      setGeneratedQR(`QR-${Math.random().toString(36).substring(2, 9).toUpperCase()}`)
+      setShowQR(true)
+    }
+  }
+
+  const products = [
+    { id: "QR-001", name: "Organic Tomatoes", status: "verified", date: "2025-01-15", progress: 100 },
+    { id: "QR-002", name: "Fresh Lettuce", status: "pending", date: "2025-01-20", progress: 50 },
+    { id: "QR-003", name: "Sweet Corn", status: "market", date: "2025-01-10", progress: 100 },
+  ]
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "verified":
+        return <CheckCircle2 className="w-5 h-5 text-[#3FA34D]" />
+      case "pending":
+        return <Clock className="w-5 h-5 text-[#00BFFF]" />
+      case "market":
+        return <Package className="w-5 h-5 text-[#1E3A34]" />
+      default:
+        return null
+    }
+  }
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "verified":
+        return "Verified"
+      case "pending":
+        return "Pending"
+      case "market":
+        return "On Market"
+      default:
+        return status
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-white to-[#f9f9f9] py-12">
+      <div className="container mx-auto px-4">
+        {/* Header with Wallet Connect */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-bold text-[#1E3A34] mb-2">Farmer Dashboard</h1>
+            <p className="text-lg text-[#1E3A34]/70">
+              Register crops and generate QR codes for blockchain traceability
+            </p>
+          </div>
+          <Button
+            onClick={() => setWalletConnected(!walletConnected)}
+            className={`${
+              walletConnected
+                ? "bg-gradient-to-r from-[#3FA34D] to-[#1E3A34]"
+                : "bg-gradient-to-r from-[#00BFFF] to-[#3FA34D]"
+            } hover:opacity-90 text-white font-semibold px-6 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all whitespace-nowrap`}
+          >
+            <Wallet className="w-5 h-5 mr-2" />
+            {walletConnected ? "Wallet Connected" : "Connect Wallet"}
+          </Button>
+        </div>
+
+        <div className="grid lg:grid-cols-3 gap-8 mb-8">
+          {/* Wizard Steps */}
+          <div className="lg:col-span-2">
+            <Card className="border-[#f0f0f0] shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-2xl text-[#1E3A34]">{steps[currentStep].title}</CardTitle>
+                <CardDescription>{steps[currentStep].description}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Step 1: Personal Info */}
+                {currentStep === 0 && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name" className="flex items-center gap-2">
+                        Full Name
+                        <Info className="w-4 h-4 text-[#00BFFF]" />
+                      </Label>
+                      <Input
+                        id="name"
+                        name="name"
+                        placeholder="Your full name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        className="border-[#f0f0f0]"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="location" className="flex items-center gap-2">
+                        Location
+                        <Info className="w-4 h-4 text-[#00BFFF]" />
+                      </Label>
+                      <Input
+                        id="location"
+                        name="location"
+                        placeholder="City, State/Province"
+                        value={formData.location}
+                        onChange={handleInputChange}
+                        className="border-[#f0f0f0]"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 2: Farm Info */}
+                {currentStep === 1 && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="farmSize" className="flex items-center gap-2">
+                        Farm Size (acres)
+                        <Info className="w-4 h-4 text-[#00BFFF]" />
+                      </Label>
+                      <Input
+                        id="farmSize"
+                        name="farmSize"
+                        type="number"
+                        placeholder="e.g., 50"
+                        value={formData.farmSize}
+                        onChange={handleInputChange}
+                        className="border-[#f0f0f0]"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="farmType" className="flex items-center gap-2">
+                        Farm Type
+                        <Info className="w-4 h-4 text-[#00BFFF]" />
+                      </Label>
+                      <select
+                        id="farmType"
+                        name="farmType"
+                        value={formData.farmType}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-[#f0f0f0] rounded-lg bg-white"
+                      >
+                        <option value="">Select farm type</option>
+                        <option value="organic">Organic</option>
+                        <option value="conventional">Conventional</option>
+                        <option value="mixed">Mixed</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 3: Certifications */}
+                {currentStep === 2 && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="certifications" className="flex items-center gap-2">
+                        Certifications (Optional)
+                        <Info className="w-4 h-4 text-[#00BFFF]" />
+                      </Label>
+                      <div className="border-2 border-dashed border-[#f0f0f0] rounded-lg p-8 text-center hover:border-[#3FA34D] transition-colors cursor-pointer">
+                        <Upload className="w-8 h-8 mx-auto mb-2 text-[#1E3A34]/50" />
+                        <p className="text-sm text-[#1E3A34]/70">Click to upload or drag and drop</p>
+                        <p className="text-xs text-[#1E3A34]/50 mt-1">PDF, PNG, JPG up to 10MB</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 4: Add Crop */}
+                {currentStep === 3 && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="cropName" className="flex items-center gap-2">
+                        Crop Name
+                        <Info className="w-4 h-4 text-[#00BFFF]" />
+                      </Label>
+                      <select
+                        id="cropName"
+                        name="cropName"
+                        value={formData.cropName}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-[#f0f0f0] rounded-lg bg-white"
+                      >
+                        <option value="">Select crop</option>
+                        <option value="tomatoes">Organic Tomatoes</option>
+                        <option value="lettuce">Fresh Lettuce</option>
+                        <option value="corn">Sweet Corn</option>
+                        <option value="carrots">Carrots</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="harvestDate" className="flex items-center gap-2">
+                        Harvest Date
+                        <Info className="w-4 h-4 text-[#00BFFF]" />
+                      </Label>
+                      <Input
+                        id="harvestDate"
+                        name="harvestDate"
+                        type="date"
+                        value={formData.harvestDate}
+                        onChange={handleInputChange}
+                        className="border-[#f0f0f0]"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Description (Optional)</Label>
+                      <Textarea
+                        id="description"
+                        name="description"
+                        placeholder="Add details about farming practices..."
+                        value={formData.description}
+                        onChange={handleInputChange}
+                        className="border-[#f0f0f0] min-h-[80px]"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Navigation Buttons */}
+                <div className="flex gap-3 pt-4">
+                  {currentStep > 0 && (
+                    <Button
+                      onClick={() => setCurrentStep(currentStep - 1)}
+                      variant="outline"
+                      className="flex-1 border-[#3FA34D] text-[#1E3A34]"
+                    >
+                      Back
+                    </Button>
+                  )}
+                  {currentStep < steps.length - 1 ? (
+                    <Button
+                      onClick={handleNextStep}
+                      className="flex-1 bg-gradient-to-r from-[#3FA34D] to-[#1E3A34] hover:opacity-90 text-white font-semibold rounded-xl"
+                    >
+                      Next <ChevronRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleGenerateQR}
+                      className="flex-1 bg-gradient-to-r from-[#3FA34D] to-[#1E3A34] hover:opacity-90 text-white font-semibold rounded-xl"
+                    >
+                      <QrCode className="w-5 h-5 mr-2" />
+                      Generate QR Code
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Progress Sidebar */}
+          <div className="space-y-4">
+            <Card className="border-[#f0f0f0] shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-lg text-[#1E3A34]">Registration Progress</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {steps.map((step, index) => (
+                  <div
+                    key={index}
+                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all ${
+                      index === currentStep
+                        ? "bg-[#3FA34D]/10 border border-[#3FA34D]"
+                        : index < currentStep
+                          ? "bg-[#3FA34D]/5"
+                          : "bg-[#f9f9f9]"
+                    }`}
+                    onClick={() => index <= currentStep && setCurrentStep(index)}
+                  >
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm ${
+                        index < currentStep
+                          ? "bg-[#3FA34D] text-white"
+                          : index === currentStep
+                            ? "bg-[#00BFFF] text-white"
+                            : "bg-[#f0f0f0] text-[#1E3A34]"
+                      }`}
+                    >
+                      {index < currentStep ? <CheckCircle2 className="w-4 h-4" /> : index + 1}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-[#1E3A34]">{step.title}</p>
+                      <p className="text-xs text-[#1E3A34]/60">{step.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Auto-Save Info */}
+            <div className="bg-[#3FA34D]/10 rounded-lg p-4 border border-[#3FA34D]/20">
+              <p className="text-sm text-[#1E3A34] flex items-start gap-2">
+                <Info className="w-4 h-4 mt-0.5 flex-shrink-0 text-[#3FA34D]" />
+                Your progress is automatically saved
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* QR Code Display */}
+        {showQR && (
+          <Card className="mb-8 border-[#f0f0f0] shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-2xl text-[#1E3A34]">QR Code Generated</CardTitle>
+              <CardDescription>Your unique product identifier</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div className="bg-white p-8 rounded-xl border-2 border-[#3FA34D] flex items-center justify-center">
+                  <div className="w-64 h-64 bg-gradient-to-br from-[#3FA34D]/10 to-[#1E3A34]/10 rounded-lg flex items-center justify-center">
+                    <QrCode className="w-48 h-48 text-[#1E3A34]" />
+                  </div>
+                </div>
+                <div className="bg-[#3FA34D]/10 rounded-lg p-4 border border-[#3FA34D]/20">
+                  <p className="text-sm font-mono text-[#1E3A34] break-all">{generatedQR}</p>
+                </div>
+                <div className="flex gap-3">
+                  <Button variant="outline" className="flex-1 border-[#3FA34D] text-[#1E3A34] bg-transparent">
+                    Download
+                  </Button>
+                  <Button variant="outline" className="flex-1 border-[#3FA34D] text-[#1E3A34] bg-transparent">
+                    Print
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Active Batches */}
+        <Card className="border-[#f0f0f0] shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl text-[#1E3A34]">Active Batches</CardTitle>
+            <CardDescription>Monitor your registered products</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {products.map((product) => (
+                <div
+                  key={product.id}
+                  className="p-4 bg-white rounded-lg border border-[#f0f0f0] hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      {getStatusIcon(product.status)}
+                      <div>
+                        <p className="font-semibold text-[#1E3A34]">{product.name}</p>
+                        <p className="text-sm text-[#1E3A34]/60">ID: {product.id}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium text-[#1E3A34]">{getStatusText(product.status)}</p>
+                      <p className="text-sm text-[#1E3A34]/60">{product.date}</p>
+                    </div>
+                  </div>
+                  <div className="w-full bg-[#f0f0f0] rounded-full h-2">
+                    <div
+                      className="bg-gradient-to-r from-[#3FA34D] to-[#00BFFF] h-2 rounded-full transition-all"
+                      style={{ width: `${product.progress}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
