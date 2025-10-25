@@ -412,7 +412,9 @@ export default function FarmerDashboard() {
             <CardContent>
               <div className="space-y-6">
                 <div className="bg-white p-8 rounded-xl border-2 border-[#3FA34D] flex items-center justify-center">
-                  <QRCode value={generatedQR} size={256} />
+                  <div className="w-64 h-64 bg-gradient-to-br from-[#3FA34D]/10 to-[#1E3A34]/10 rounded-lg flex items-center justify-center">
+                    <QrCode className="w-48 h-48 text-[#1E3A34]" />
+                  </div>
                 </div>
                 <div className="bg-[#3FA34D]/10 rounded-lg p-4 border border-[#3FA34D]/20">
                   <p className="text-sm font-mono text-[#1E3A34] break-all">{generatedQR}</p>
